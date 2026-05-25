@@ -1,0 +1,47 @@
+apiVersion: flashback.io/v1alpha1
+kind: FlashbackPolicy
+metadata:
+  name: track-workloads
+spec:
+  # Track core Kubernetes workload resources
+  resources:
+    - apiVersion: apps/v1
+      kind: Deployment
+      namespaces:
+        - default
+      excludeNamespaces:
+        - kube-system
+        - kube-public
+
+    - apiVersion: v1
+      kind: Pod
+      namespaces:
+        - default
+        # - production
+      excludeNames:
+        - coredns
+
+  # Keep 30 days of history, max 500 revisions per resource
+  retention:
+    maxAge: "720h"
+    maxRevisions: 500
+
+  # Full snapshot every 20 changes, compressed
+  storage:
+    snapshotEvery: 20
+    compressSnapshots: true
+
+  # Ignore noisy fields, don't track status by default
+  fieldConfig:
+    ignoreFields:
+      - ".metadata.annotations.deployment\\.kubernetes\\.io/revision"
+      - ".metadata.annotations"
+    trackStatus: false
+
+  # Track all event types
+  tracking:
+    creations: true
+    updates: true
+    deletions: true
+
+  paused: false

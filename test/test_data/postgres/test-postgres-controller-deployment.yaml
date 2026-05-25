@@ -32,11 +32,10 @@ spec:
           type: RuntimeDefault
       containers:
         - name: controller
-          image: ghcr.io/prashanthjos/kflashback:latest
+          image: kflashback-controller:e2e
+          imagePullPolicy: Never
           args:
             - --config-name=kflashback
-            - --storage-backend=sqlite
-            - --storage-dsn=/data/kflashback.db
             - --api-bind-address=:9090
             - --metrics-bind-address=:8080
             - --health-probe-bind-address=:8081
@@ -77,27 +76,6 @@ spec:
               drop:
                 - ALL
             readOnlyRootFilesystem: true
-          volumeMounts:
-            - name: data
-              mountPath: /data
-      volumes:
-        - name: data
-          persistentVolumeClaim:
-            claimName: kflashback-data
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: kflashback-data
-  namespace: kflashback-system
-  labels:
-    app.kubernetes.io/name: kflashback
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi
 ---
 apiVersion: v1
 kind: Service
@@ -117,5 +95,3 @@ spec:
   selector:
     app.kubernetes.io/name: kflashback
     app.kubernetes.io/component: controller
-
-

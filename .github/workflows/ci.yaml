@@ -144,3 +144,62 @@ jobs:
             config/samples/sample-config.yaml \
             config/samples/sample-config-postgres.yaml \
             config/samples/sample-policy.yaml
+
+  # ─────────────────────────────────────────────────────
+  # E2E Test Suite: Runs E2E Test for SQLite and Postgres
+  # ─────────────────────────────────────────────────────
+
+  sqlite_e2e_test:
+    name: SQLite E2E Test setup
+    runs-on:  ubuntu-latest
+    needs: [go, integration, ui, docker, manifests]
+    env:
+      STORAGE_BACKEND:  "sqlite"
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Pull Kind Node image
+        run:  docker pull kindest/node@sha256:c48c62eac5da28cdadcf560d1d8616cfa6783b58f0d94cf63ad1bf49600cb027
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      
+      - name: Run SQLite E2E Test
+        working-directory:  ./test
+        run:  go test -race -tags=e2e -v ./...
+      
+      - name: Cleanup Resources
+        run:  |
+          docker stop $(docker ps -q)
+          docker rm $(docker ps -q)
+          docker system prune --volumes -af
+
+  postgres_e2e_test:
+    name: Postgresql E2E Test setup
+    runs-on:  ubuntu-latest
+    needs: [go, integration, ui, docker, manifests]
+    env:
+      STORAGE_BACKEND:  "postgresql"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pull Kind Node image
+        run:  docker pull kindest/node@sha256:c48c62eac5da28cdadcf560d1d8616cfa6783b58f0d94cf63ad1bf49600cb027
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false      
+      - name: Run Postgresql E2E Test
+        working-directory:  ./test
+        run:  go test -race -tags=e2e -v ./...
+      
+      - name: Cleanup Resources
+        run:  |
+          docker stop $(docker ps -q)
+          docker rm $(docker ps -q)
+          docker system prune --volumes -af

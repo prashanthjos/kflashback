@@ -1,0 +1,15 @@
+apiVersion: flashback.io/v1alpha1
+kind: KFlashbackConfig
+metadata:
+  name: kflashback
+spec:
+  storage:
+    backend: sqlite
+    dsn: /data/kflashback.db
+  server:
+    apiAddress: ":9090"
+    metricsAddress: ":8080"
+    healthAddress: ":8081"
+  controller:
+    leaderElection: true
+    reconcileInterval: "5m"

@@ -64,12 +64,12 @@ kflashback records the complete change history of your Kubernetes resources - de
 
 kflashback uses an incremental storage approach for maximum efficiency:
 
-| Event      | What is stored                    | Typical size       |
-|------------|-----------------------------------|--------------------|
-| Create     | Full snapshot (gzipped)           | 2-10 KB            |
-| Update     | JSON merge patch only             | 50-500 bytes       |
-| Every N    | Full snapshot (configurable, N=20)| 2-10 KB            |
-| Delete     | Full snapshot (last known state)  | 2-10 KB            |
+| Event   | What is stored                     | Typical size |
+| ------- | ---------------------------------- | ------------ |
+| Create  | Full snapshot (gzipped)            | 2-10 KB      |
+| Update  | JSON merge patch only              | 50-500 bytes |
+| Every N | Full snapshot (configurable, N=20) | 2-10 KB      |
+| Delete  | Full snapshot (last known state)   | 2-10 KB      |
 
 **Reconstruction**: To view a resource at revision R, kflashback finds the nearest snapshot ≤ R and applies all subsequent patches. With `snapshotEvery: 20`, worst-case reconstruction applies at most 19 patches.
 
@@ -89,6 +89,7 @@ kubectl apply -f config/crd/
 ```
 
 This installs both CRDs:
+
 - `FlashbackPolicy` - defines which resources to track
 - `KFlashbackConfig` - configures the kflashback controller itself
 
@@ -162,11 +163,12 @@ kubectl apply -f config/samples/sample-config-postgres.yaml
 ```
 
 > **Credential resolution priority** (highest to lowest):
+> 
 > 1. `KFLASHBACK_STORAGE_DSN` environment variable
 > 2. Kubernetes Secret referenced by `spec.storage.credentialsSecret`
 > 3. `spec.storage.dsn` field in the CR
 > 4. CLI `--storage-dsn` flag
->
+> 
 > This means you can also inject credentials by mounting a Secret as an environment variable in the Deployment, which works well with cloud provider integrations (AWS Secrets Manager, GCP Secret Manager, HashiCorp Vault, etc.).
 
 ### 4. Build and load the container image
@@ -285,6 +287,7 @@ make run
 ```
 
 The `make run` command starts kflashback with:
+
 - `--config-name=""` - skips KFlashbackConfig CR lookup
 - `--storage-backend=sqlite --storage-dsn=./kflashback.db` - local SQLite file
 - `--ui-dir=./ui/dist` - serves the built UI
@@ -331,72 +334,72 @@ make docker-build
 
 The `KFlashbackConfig` CR is a **cluster-scoped singleton** that configures the kflashback controller. The controller reads it at startup. CLI flags serve as defaults when no CR is found.
 
-| Field | Type | Default | Description |
-|---|---|---|---|
-| `spec.storage.backend` | string | `sqlite` | Storage backend (`sqlite`, `postgres`) |
-| `spec.storage.dsn` | string | `/data/kflashback.db` | DSN or file path (avoid credentials here) |
-| `spec.storage.credentialsSecret.name` | string | - | Name of Secret containing the DSN |
-| `spec.storage.credentialsSecret.namespace` | string | `kflashback-system` | Namespace of the Secret |
-| `spec.storage.credentialsSecret.key` | string | `dsn` | Key in Secret holding the connection string |
-| `spec.server.apiAddress` | string | `:9090` | API server bind address |
-| `spec.server.metricsAddress` | string | `:8080` | Metrics endpoint address |
-| `spec.server.healthAddress` | string | `:8081` | Health probe address |
-| `spec.controller.leaderElection` | bool | `false` | Enable leader election |
-| `spec.controller.reconcileInterval` | string | `5m` | Retention cleanup interval |
-| `spec.ai.enabled` | bool | `false` | Enable AI-powered features |
-| `spec.ai.provider` | string | `openai` | Provider type (`openai`, `ollama`, `anthropic`) |
-| `spec.ai.endpoint` | string | - | API base URL (see provider setup below) |
-| `spec.ai.model` | string | `gpt-4o-mini` | Model name |
-| `spec.ai.maxTokens` | int | `1024` | Max tokens per AI response |
-| `spec.ai.temperature` | string | `0.3` | Response randomness (0.0–1.0) |
-| `spec.ai.contextMode` | string | `compact` | `compact` (fast, local models) or `full` (detailed, cloud models) |
-| `spec.ai.credentialsSecret.name` | string | - | Secret containing the API key |
-| `spec.ai.credentialsSecret.namespace` | string | `kflashback-system` | Namespace of the Secret |
-| `spec.ai.credentialsSecret.key` | string | `api-key` | Key in Secret holding the API key |
+| Field                                      | Type   | Default               | Description                                                       |
+| ------------------------------------------ | ------ | --------------------- | ----------------------------------------------------------------- |
+| `spec.storage.backend`                     | string | `sqlite`              | Storage backend (`sqlite`, `postgres`)                            |
+| `spec.storage.dsn`                         | string | `/data/kflashback.db` | DSN or file path (avoid credentials here)                         |
+| `spec.storage.credentialsSecret.name`      | string | -                     | Name of Secret containing the DSN                                 |
+| `spec.storage.credentialsSecret.namespace` | string | `kflashback-system`   | Namespace of the Secret                                           |
+| `spec.storage.credentialsSecret.key`       | string | `dsn`                 | Key in Secret holding the connection string                       |
+| `spec.server.apiAddress`                   | string | `:9090`               | API server bind address                                           |
+| `spec.server.metricsAddress`               | string | `:8080`               | Metrics endpoint address                                          |
+| `spec.server.healthAddress`                | string | `:8081`               | Health probe address                                              |
+| `spec.controller.leaderElection`           | bool   | `false`               | Enable leader election                                            |
+| `spec.controller.reconcileInterval`        | string | `5m`                  | Retention cleanup interval                                        |
+| `spec.ai.enabled`                          | bool   | `false`               | Enable AI-powered features                                        |
+| `spec.ai.provider`                         | string | `openai`              | Provider type (`openai`, `ollama`, `anthropic`)                   |
+| `spec.ai.endpoint`                         | string | -                     | API base URL (see provider setup below)                           |
+| `spec.ai.model`                            | string | `gpt-4o-mini`         | Model name                                                        |
+| `spec.ai.maxTokens`                        | int    | `1024`                | Max tokens per AI response                                        |
+| `spec.ai.temperature`                      | string | `0.3`                 | Response randomness (0.0–1.0)                                     |
+| `spec.ai.contextMode`                      | string | `compact`             | `compact` (fast, local models) or `full` (detailed, cloud models) |
+| `spec.ai.credentialsSecret.name`           | string | -                     | Secret containing the API key                                     |
+| `spec.ai.credentialsSecret.namespace`      | string | `kflashback-system`   | Namespace of the Secret                                           |
+| `spec.ai.credentialsSecret.key`            | string | `api-key`             | Key in Secret holding the API key                                 |
 
 ### FlashbackPolicy CRD
 
 The `FlashbackPolicy` CR defines **which resources to track** and retention settings. You can create multiple policies.
 
-| Field | Type | Default | Description |
-|---|---|---|---|
-| `spec.resources[].apiVersion` | string | required | API version (e.g., `apps/v1`) |
-| `spec.resources[].kind` | string | required | Resource kind (e.g., `Deployment`) |
-| `spec.resources[].namespaces` | []string | all | Namespaces to track |
-| `spec.resources[].excludeNamespaces` | []string | none | Namespaces to exclude |
-| `spec.resources[].excludeNames` | []string | none | Resource names to exclude |
-| `spec.resources[].includeNames` | []string | all | Resource names to include |
-| `spec.resources[].labelSelector` | LabelSelector | none | Filter by labels |
-| `spec.retention.maxAge` | string | `720h` | Max history retention duration |
-| `spec.retention.maxRevisions` | int32 | `1000` | Max revisions per resource |
-| `spec.storage.snapshotEvery` | int32 | `20` | Full snapshot interval |
-| `spec.storage.compressSnapshots` | bool | `true` | Gzip compress snapshots |
-| `spec.fieldConfig.ignoreFields` | []string | defaults | JSON paths to ignore |
-| `spec.fieldConfig.trackStatus` | bool | `false` | Track `.status` changes |
-| `spec.tracking.creations` | bool | `true` | Record creation events |
-| `spec.tracking.updates` | bool | `true` | Record update events |
-| `spec.tracking.deletions` | bool | `true` | Record deletion events |
-| `spec.paused` | bool | `false` | Pause all tracking |
+| Field                                | Type          | Default  | Description                        |
+| ------------------------------------ | ------------- | -------- | ---------------------------------- |
+| `spec.resources[].apiVersion`        | string        | required | API version (e.g., `apps/v1`)      |
+| `spec.resources[].kind`              | string        | required | Resource kind (e.g., `Deployment`) |
+| `spec.resources[].namespaces`        | []string      | all      | Namespaces to track                |
+| `spec.resources[].excludeNamespaces` | []string      | none     | Namespaces to exclude              |
+| `spec.resources[].excludeNames`      | []string      | none     | Resource names to exclude          |
+| `spec.resources[].includeNames`      | []string      | all      | Resource names to include          |
+| `spec.resources[].labelSelector`     | LabelSelector | none     | Filter by labels                   |
+| `spec.retention.maxAge`              | string        | `720h`   | Max history retention duration     |
+| `spec.retention.maxRevisions`        | int32         | `1000`   | Max revisions per resource         |
+| `spec.storage.snapshotEvery`         | int32         | `20`     | Full snapshot interval             |
+| `spec.storage.compressSnapshots`     | bool          | `true`   | Gzip compress snapshots            |
+| `spec.fieldConfig.ignoreFields`      | []string      | defaults | JSON paths to ignore               |
+| `spec.fieldConfig.trackStatus`       | bool          | `false`  | Track `.status` changes            |
+| `spec.tracking.creations`            | bool          | `true`   | Record creation events             |
+| `spec.tracking.updates`              | bool          | `true`   | Record update events               |
+| `spec.tracking.deletions`            | bool          | `true`   | Record deletion events             |
+| `spec.paused`                        | bool          | `false`  | Pause all tracking                 |
 
 ### CLI Flags
 
 These are used as defaults when no `KFlashbackConfig` CR is found, or when `--config-name=""`.
 
-| Flag | Default | Description |
-|---|---|---|
-| `--config-name` | `kflashback` | Name of `KFlashbackConfig` CR to read (empty to skip) |
-| `--storage-backend` | `sqlite` | Storage backend |
-| `--storage-dsn` | `/data/kflashback.db` | DSN or path |
-| `--api-bind-address` | `:9090` | API server bind address |
-| `--metrics-bind-address` | `:8080` | Metrics bind address |
-| `--health-probe-bind-address` | `:8081` | Health probe bind address |
-| `--ui-dir` | `/ui` | UI static files directory |
-| `--leader-elect` | `false` | Enable leader election |
-| `--ai-enabled` | `false` | Enable AI features |
-| `--ai-endpoint` | - | AI provider URL (e.g. `http://localhost:11434/v1`) |
-| `--ai-model` | `qwen3:8b` | AI model name |
-| `--ai-api-key` | - | API key (prefer `KFLASHBACK_AI_API_KEY` env var) |
-| `--ai-context-mode` | `compact` | `compact` or `full` |
+| Flag                          | Default               | Description                                           |
+| ----------------------------- | --------------------- | ----------------------------------------------------- |
+| `--config-name`               | `kflashback`          | Name of `KFlashbackConfig` CR to read (empty to skip) |
+| `--storage-backend`           | `sqlite`              | Storage backend                                       |
+| `--storage-dsn`               | `/data/kflashback.db` | DSN or path                                           |
+| `--api-bind-address`          | `:9090`               | API server bind address                               |
+| `--metrics-bind-address`      | `:8080`               | Metrics bind address                                  |
+| `--health-probe-bind-address` | `:8081`               | Health probe bind address                             |
+| `--ui-dir`                    | `/ui`                 | UI static files directory                             |
+| `--leader-elect`              | `false`               | Enable leader election                                |
+| `--ai-enabled`                | `false`               | Enable AI features                                    |
+| `--ai-endpoint`               | -                     | AI provider URL (e.g. `http://localhost:11434/v1`)    |
+| `--ai-model`                  | `qwen3:8b`            | AI model name                                         |
+| `--ai-api-key`                | -                     | API key (prefer `KFLASHBACK_AI_API_KEY` env var)      |
+| `--ai-context-mode`           | `compact`             | `compact` or `full`                                   |
 
 ---
 
@@ -406,12 +409,12 @@ kflashback includes optional AI-powered features for understanding cluster chang
 
 ### What AI can do
 
-| Feature | API Endpoint | Description |
-|---|---|---|
-| **Natural language queries** | `POST /api/v1/ai/query` | Ask questions like "What deployments are tracked?" |
-| **Change summarization** | `GET /api/v1/ai/summarize/{uid}/revisions/{rev}` | Human-readable summary of a revision |
-| **Diff summarization** | `GET /api/v1/ai/summarize/{uid}/diff?from=1&to=5` | Summary comparing two revisions |
-| **Anomaly detection** | `GET /api/v1/ai/anomalies?hours=24` | Flag unusual changes in recent history |
+| Feature                      | API Endpoint                                      | Description                                        |
+| ---------------------------- | ------------------------------------------------- | -------------------------------------------------- |
+| **Natural language queries** | `POST /api/v1/ai/query`                           | Ask questions like "What deployments are tracked?" |
+| **Change summarization**     | `GET /api/v1/ai/summarize/{uid}/revisions/{rev}`  | Human-readable summary of a revision               |
+| **Diff summarization**       | `GET /api/v1/ai/summarize/{uid}/diff?from=1&to=5` | Summary comparing two revisions                    |
+| **Anomaly detection**        | `GET /api/v1/ai/anomalies?hours=24`               | Flag unusual changes in recent history             |
 
 ### Provider setup
 
@@ -461,10 +464,10 @@ Sample config: `config/samples/sample-config-anthropic.yaml`
 
 ### Context modes
 
-| Mode | Best for | What's sent to the AI | Speed |
-|---|---|---|---|
-| `compact` | Local models (Ollama, small GPUs) | Short text summary (~200 tokens) | 10–25s |
-| `full` | Cloud models (GPT-4o, Claude) | Detailed JSON with resources + revisions | Depends on model |
+| Mode      | Best for                          | What's sent to the AI                    | Speed            |
+| --------- | --------------------------------- | ---------------------------------------- | ---------------- |
+| `compact` | Local models (Ollama, small GPUs) | Short text summary (~200 tokens)         | 10–25s           |
+| `full`    | Cloud models (GPT-4o, Claude)     | Detailed JSON with resources + revisions | Depends on model |
 
 ### Credential priority
 
