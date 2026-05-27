@@ -170,12 +170,6 @@ jobs:
       - name: Run SQLite E2E Test
         working-directory:  ./test
         run:  go test -race -tags=e2e -v ./...
-      
-      - name: Cleanup Resources
-        run:  |
-          docker stop $(docker ps -q)
-          docker rm $(docker ps -q)
-          docker system prune --volumes -af
 
   postgres_e2e_test:
     name: Postgresql E2E Test setup
@@ -197,9 +191,3 @@ jobs:
       - name: Run Postgresql E2E Test
         working-directory:  ./test
         run:  go test -race -tags=e2e -v ./...
-      
-      - name: Cleanup Resources
-        run:  |
-          docker stop $(docker ps -q)
-          docker rm $(docker ps -q)
-          docker system prune --volumes -af
